@@ -118,7 +118,7 @@ def display(confusion_matrix, categories, output_path):
         print('precision_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, precision))
         print('recall_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, recall))
         
-        results.append({'category' : name, 'precision' : precision, 'recall' : recall})
+        results.append({'category' : name, 'precision_@{}IOU'.format(IOU_THRESHOLD) : precision, 'recall_@{}IOU'.format(IOU_THRESHOLD) : recall})
     
     df = pd.DataFrame(results)
     print(df)
