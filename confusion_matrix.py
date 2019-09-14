@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
@@ -10,6 +11,7 @@ flags = tf.app.flags
 
 flags.DEFINE_string('label_map', None, 'Path to the label map')
 flags.DEFINE_string('detections_record', None, 'Path to the detections record file')
+flags.DEFINE_string('output_path', None, 'Path to the output the results in a csv.')
 
 FLAGS = flags.FLAGS
 
@@ -98,9 +100,10 @@ def process_detections(detections_record, categories):
 
     return confusion_matrix
 
-def display(confusion_matrix, categories):
+def display(confusion_matrix, categories, output_path):
     print("\nConfusion Matrix:")
     print(confusion_matrix, "\n")
+    results = []
 
     for i in range(len(categories)):
         id = categories[i]["id"] - 1
@@ -112,12 +115,18 @@ def display(confusion_matrix, categories):
         precision = float(confusion_matrix[id, id] / total_predicted)
         recall = float(confusion_matrix[id, id] / total_target)
         
-        print('precision_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, precision))
-        print('recall_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, recall))
-
+        #print('precision_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, precision))
+        #print('recall_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, recall))
+        
+        results.append({'category' : name, 'precision_@{}IOU'.format(IOU_THRESHOLD) : precision, 'recall_@{}IOU'.format(IOU_THRESHOLD) : recall})
+    
+    df = pd.DataFrame(results)
+    print(df)
+    df.to_csv(output_path)
+    
 def main(argv):
     del argv
-    required_flags = ['detections_record', 'label_map']
+    required_flags = ['detections_record', 'label_map', 'output_path']
     for flag_name in required_flags:
         if not getattr(FLAGS, flag_name):
             raise ValueError('Flag --{} is required'.format(flag_name))
@@ -127,7 +136,7 @@ def main(argv):
 
     confusion_matrix = process_detections(FLAGS.detections_record, categories)
 
-    display(confusion_matrix, categories)    
+    display(confusion_matrix, categories, FLAGS.output_path)    
     
 if __name__ == '__main__':
     tf.app.run(main)
