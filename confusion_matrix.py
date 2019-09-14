@@ -115,8 +115,8 @@ def display(confusion_matrix, categories, output_path):
         precision = float(confusion_matrix[id, id] / total_predicted)
         recall = float(confusion_matrix[id, id] / total_target)
         
-        print('precision_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, precision))
-        print('recall_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, recall))
+        #print('precision_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, precision))
+        #print('recall_{}@{}IOU: {:.2f}'.format(name, IOU_THRESHOLD, recall))
         
         results.append({'category' : name, 'precision_@{}IOU'.format(IOU_THRESHOLD) : precision, 'recall_@{}IOU'.format(IOU_THRESHOLD) : recall})
     
