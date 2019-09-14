@@ -13,7 +13,7 @@ To run this script you need a couple of things:
 Here is an example of running the script:
 
 ```
-python confusion_matrix.py --detections_record=testing_detections.record --label_map=label_map.pbtxt
+python confusion_matrix.py --detections_record=testing_detections.record --label_map=label_map.pbtxt --output_path=confusion_matrix.csv
 ```
 
-The script will print the confusion matrix along with precision and recall information to the standard output.
+The script will print the confusion matrix along with precision and recall information to the standard output and save the precision/recall results to the specified output area. 
