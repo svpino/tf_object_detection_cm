@@ -17,3 +17,50 @@ python confusion_matrix.py --detections_record=testing_detections.record --label
 ```
 
 The script will print the confusion matrix along with precision and recall information to the standard output and save the precision/recall results to the specified output area. 
+
+## Sometimes things fail, so read up
+
+Since I published this repository, the single most reported issue is some flavor of the following error:
+
+```
+Traceback (most recent call last):
+  File "confusion_matrix.py", line 133, in <module>
+    tf.app.run(main)
+  File "/home/ubuntu/anaconda3/lib/python3.6/site-packages/tensorflow/python/platform/app.py", line 125, in run
+    _sys.exit(main(argv))
+  File "confusion_matrix.py", line 128, in main
+    confusion_matrix = process_detections(FLAGS.detections_record, categories)
+  File "confusion_matrix.py", line 45, in process_detections
+    decoded_dict = data_parser.parse(example)
+  File "/home/ubuntu/tensorflow/models/research/object_detection/metrics/tf_example_parser.py", line 153, in parse
+    results_dict[key] = parser.parse(tf_example)
+  File "/home/ubuntu/tensorflow/models/research/object_detection/metrics/tf_example_parser.py", line 49, in parse
+    self.field_name].HasField("bytes_list") else None
+TypeError: sequence item 0: expected str instance, bytes found
+```
+
+For some weird reason, I've been too lazy to add an answer to this documentation, so I've gotten a bunch of reports and I've kept pointing everyone to issue #1 where I explained how to solve the problem. That ends today. 
+
+The problem is with the TensorFlow library and the solution is [explained here](https://github.com/tensorflow/models/issues/3252). Unfortunately, you'll have to patch your local copy of TensorFlow to get around it.
+
+Here is the relevant section of the link that explains what you need to do (quote below):
+
+> I had same error with Python3.5 and TF1.5. This causes tf_example.features.feature[self.field_name].bytes_list.value returns byte type instead of string type in metrics/tf_example_parser.StringParser.
+> 
+> So I changed tf_example_parser.StringParser below
+
+```
+class StringParser(data_parser.DataToNumpyParser):
+  """Tensorflow Example string parser."""
+  def __init__(self, field_name):
+    self.field_name = field_name
+  def parse(self, tf_example):
+    if tf_example.features.feature[self.field_name].HasField("bytes_list"):
+        result = tf_example.features.feature[self.field_name].bytes_list.value
+        result = "".join([x if type(x)=='str' else x.decode('utf-8') for x in result])
+    else:
+        result = None
+    return result
+```
+
+I don't like to patch things, and probably you neither. But I promise this one is extremely simple. Find `metrics/tf_example_parser`, and make the above change. It'll take you a minute to be up and running.
